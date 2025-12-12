@@ -7,8 +7,8 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - text: Tutorials
-        href: pages/tuto.qmd
+      - text: BERTopic Tutorial
+        href: pages/bertopic-tutorial.qmd
 
 format:
   html:

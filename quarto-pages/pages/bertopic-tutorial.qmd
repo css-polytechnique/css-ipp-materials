@@ -1,5 +1,5 @@
 ---
-title: "The General Inquirer at the time of LLMS: a BERTopic tutorial"
+title: "The General Inquirer at the time of LLMs: a BERTopic tutorial"
 author: 
     - name: A. Morin
       email: axel.morin@polytechnique.etu
@@ -84,7 +84,7 @@ We provide a detailed "requirements" file that should work for Linux and MacOS.
 
 **Material**
 
-The tutorial comes with some material uploaded on [Zenodo](https://doi.org/10.5281/zenodo.17416954) :
+The tutorial comes with some material uploaded on [Zenodo](https://doi.org/10.5281/zenodo.17936090) :
 
 - A Jupyter notebook with code to execute
 - The original dataset (which can be downloaded [here](https://www.data.gouv.fr/datasets/theses-soutenues-en-france-depuis-1985/)) 
@@ -281,7 +281,7 @@ The Optional Fine-tuning step is not covered in this tutorial. This step propose
 
 ## Preprocess your data
 
-As mentioned before, we will use the dataset listing all dissertations defended in France since 1985. The original dataset can be downloaded on [data.gouv.fr](https://www.data.gouv.fr/datasets/theses-soutenues-en-france-depuis-1985/). To avoid excessive pre-processing, we curated[^17] the dataset and uploaded it (with the code) on [Zenodo](https://doi.org/10.5281/zenodo.17416954).
+As mentioned before, we will use the dataset listing all dissertations defended in France since 1985. The original dataset can be downloaded on [data.gouv.fr](https://www.data.gouv.fr/datasets/theses-soutenues-en-france-depuis-1985/). To avoid excessive pre-processing, we curated[^17] the dataset and uploaded it (with the code) on [Zenodo](https://doi.org/10.5281/zenodo.17936090).
 
 It is crucial to stress that the preprocessing step is **the most important step**. Although we can tune the topic model towards meaningful clusters and representations, your corpus is your input and no model will generate good results out of poor inputs. We list a number of questions you need to consider and justify for your topic model to be relevant:
 
@@ -420,7 +420,7 @@ topic_model.fit(documents=docs)
 
 This snippet of code takes a long time to run (>10 mins) as each element must be embedded first.
 
-To avoid unnecessary computation time, we have embedded 6500 elements with several models for the French and English abstracts that you can download from [Zenodo](https://doi.org/10.5281/zenodo.17416954). The code changes as such: 
+To avoid unnecessary computation time, we have embedded 6500 elements with several models for the French and English abstracts that you can download from [Zenodo](https://doi.org/10.5281/zenodo.17936090). The code changes as such: 
 
 ```python
 from bertopic import BERTopic

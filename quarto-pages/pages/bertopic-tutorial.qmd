@@ -103,6 +103,8 @@ The tutorial comes with some material uploaded on [Zenodo](https://doi.org/10.5
 - The original dataset (which can be downloaded [here](https://www.data.gouv.fr/datasets/theses-soutenues-en-france-depuis-1985/)) 
 - A clean dataset with the cleaning code
 
+[The notebook is available on Github](https://github.com/css-polytechnique/css-ipp-materials/blob/main/Python-tutorials/2025-12-BERTopic.ipynb).
+
 # Understanding BERTopic
 
 ## The BERTopic pipeline

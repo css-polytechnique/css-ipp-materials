@@ -1,7 +1,5 @@
 # Tutorials and Materials
 
-Here is a text
+This is a companion page to our main website [CSS\@IPP](https://www.css.cnrs.fr/). You can still find previous tutorials on our [website](https://www.css.cnrs.fr/in-practice/). We have created this GitHub page to host all new tutorials that the team will publish. 
 
-```python 
-here is code 
-```
+Discover our freshly baked [BERTopic tutorial](./pages/bertopic-tutorial.qmd)!🎉 This tutorial is tailored for social scientists who want to explore a corpus of documents just like with an LDA but with a new method that leverages LLMs. There you'll read about the theory behind this technique and how to set up your own topic analysis.

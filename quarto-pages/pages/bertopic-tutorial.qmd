@@ -80,6 +80,19 @@ pip install -U bertopic pandas scikit-learn datasets plotly kaleido stopwordsiso
 
 We provide a detailed "requirements" file that should work for Linux and MacOS.
 
+```bash
+bertopic==0.17.3
+datasets==4.3.0
+hdbscan==0.8.40
+numpy==2.3.5
+pandas==2.3.3
+plotly==6.3.1
+scikit_learn==1.8.0
+stopwordsiso==0.6.1
+transformers==4.52.4
+umap_learn==0.5.7
+```
+
 :::
 
 **Material**

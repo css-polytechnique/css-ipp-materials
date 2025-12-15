@@ -3,6 +3,7 @@ project:
 
 website:
   title: "CSS@IPP — Tutorials and resources"
+  page-footer: "![](./assets/general/crest-logo.png){height=100px}" 
   navbar:
     left:
       - href: index.qmd

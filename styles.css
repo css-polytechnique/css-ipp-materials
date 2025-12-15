@@ -13,3 +13,13 @@ table{
         font-size: smaller;
     }
 }
+
+.quarto-title-meta-contents{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;    
+    p{
+        width: 100px;
+        margin-right: 15px;
+    }
+}

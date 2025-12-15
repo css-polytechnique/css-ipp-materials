@@ -1,6 +1,34 @@
 ---
-title: "BERTopic Tutorial"
-format: html
+title: "The General Inquirer at the time of LLMS: a BERTopic tutorial"
+author: 
+    - name: A. Morin
+      email: axel.morin@polytechnique.etu
+      role: "Author"
+    - name: É. Schultz
+      orcid: 0000-0002-6215-3606
+      url: https://emilienschultz.github.io
+      role: "Co-Author"
+    - name: É. Ollion
+      orcid: 0000-0003-3099-5240
+      url: https://ollion.cnrs.fr
+      role: "Co-Author"
+format: 
+    html:
+        include-in-header:
+            - text: |
+                <script>
+                    var _paq = window._paq = window._paq || [];
+                    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+                    _paq.push(['trackPageView']);
+                    _paq.push(['enableLinkTracking']);
+                    (function() {
+                        var u="https://analyseweb.huma-num.fr/";
+                        _paq.push(['setTrackerUrl', u+'matomo.php']);
+                        _paq.push(['setSiteId', '342']);
+                        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+                    })();
+                </script>
 toc: true
 toc-depth: 3
 ---
@@ -15,7 +43,7 @@ What are the main issues addressed in a set of documents? Are those documents si
 >
 > **Natural language processing (NLP)** is a subfield of computer science that analyses textual data. Main NLP tasks are text generation (like chatGPT), text classification, or topic modelling.
 
-![Topic Modelling in-out sketch](../assets/bertopic-tutorial/topic_modelling_scheme.png){height=400px #fig-schema}
+![Topic Modelling in-out sketch](assets/bertopic-tutorial/topic_modelling_scheme.png){height=400px #fig-schema}
 
 Until recently, topic modelling techniques — and natural language processing (NLP) in general — heavily relied on word counts, especially bag-of-words approaches. Amongst other limits, those approaches did not take into account the context in which a word is used — the order of the words in a sentence does not matter to those models, thus failing to grasp the complexity of the human language.
 
@@ -44,13 +72,13 @@ Nevertheless, you will need to have some notions of Python. If you need to refre
 
 In this tutorial, we use Python 3.12, and you can install the packages we will need with :
 
-```python
+```bash
 pip install -U bertopic pandas scikit-learn datasets plotly kaleido stopwordsiso nbformat ipykernel
 ```
 
 :::{.callout-note}
 
-We provide a detailed requirement file that should work for Linux and MacOS.
+We provide a detailed "requirements" file that should work for Linux and MacOS.
 
 :::
 
@@ -142,7 +170,7 @@ In reality, this example would not run because there are not enough documents! L
 {#tbl-final-example tbl-colwidths="[10, 20, 20,50]"}
 
 
-![2D plot of the French theses after tuning the topic model — _grey dots are classified as "noise"; these elements can be reassigned a category as we will describe later_.](./../assets/bertopic-tutorial/2D_final.png){#fig-2d-plot-intro}
+![2D plot of the French theses after tuning the topic model — _grey dots are classified as "noise"; these elements can be reassigned a category as we will describe later_.](assets/bertopic-tutorial/2D_final.png){#fig-2d-plot-intro}
 
 ## Breaking down the process
 
@@ -240,7 +268,7 @@ To sum it up we have:
 - Then create groups of semantically proximate documents with **HDBSCAN**. Each group can represent latent topics in our corpus.
 - Create meaningful representations of each group by counting words in the documents with **CountVectorizer** and outline the most representative words with **c-TF-IDF**.
 
-![The 6 steps of BERTopic [source](https://maartengr.github.io/BERTopic/algorithm/algorithm.html#visual-overview)](./../assets/bertopic-tutorial/bertopic-general-en.svg){#fig-general-illustration}
+![The 6 steps of BERTopic [source](https://maartengr.github.io/BERTopic/algorithm/algorithm.html#visual-overview)](assets/bertopic-tutorial/bertopic-general-en.svg){#fig-general-illustration}
 
 :::{.callout-note}
 
@@ -283,9 +311,8 @@ We will confirm the length of our documents before using the embedding model.
 
 Let's load the dataset:
 
-<!-- NOTE Where to import ? when necessary or at the beginning? -->
-
 ```python
+import pandas as pd
 df_raw = pd.read_csv("./data/theses-soutenues-curated.csv")
 ```
 
@@ -303,6 +330,7 @@ Let's take some time to check if our documents fit inside the context window.
 To retrieve the context window size, you can check the HuggingFace page of the model or load the configuration file that contains this information as such:
 
 ```python
+from transformers import AutoConfig 
 config = AutoConfig.from_pretrained(model_name, trust_remote_code = True)
 print(f"Context window size of the model {model_name}: {config.max_position_embeddings}")
 ```
@@ -337,6 +365,7 @@ df_raw.loc[:,["resumes.en.len", "resumes.fr.len"]].describe()
 With these statistics, we see that we can rule out using `sentence-transformers/all-MiniLM-L6-v2` because it's context window is too narrow. By keeping abstracts between 1000 and 4000 characters (ie between 300 and 1300 tokens[^7]) we can retain most of the dataset (89%) while maintaining a reasonable computation time.
 
 ```python
+import numpy as np 
 valid_index = np.logical_and.reduce([
 	df_raw["resumes.fr.len"] >= 1000,
 	df_raw["resumes.fr.len"] <= 4000,
@@ -369,12 +398,14 @@ The resulting stratified table contains 6500 rows.
 
 To create a `topic_model` object we need to create a `BERTopic` object and define some parameters. For now, we will not change the default parameters of the clustering model (`hdbscan_model`) or the dimension reduction model (`umap_model`). We will however define the language of the corpus as well as the vectorizer model in order to remove all stopwords and retrieve meaningful topics. Then, one must use the `fit` method to fit the topic model to the corpus.
 
-<!-- TODO: choose models to display --> 
-
 ```python
+from bertopic import BERTopic
+from sklearn.feature_extraction.text import CountVectorizer
+from stopwordsiso import stopwords
+
 language = "english" # or "french"
 language_short = language[:2] # "en" or "fr"
-embedding_model = "answerdotai/ModernBERT-base"
+embedding_model = "Alibaba-NLP/gte-multilingual-base"
 docs = df_stratified[f"resumes.{language_short}"]
 
 vectorizer_model = CountVectorizer(stop_words = list(stopwords(language_short)))
@@ -387,11 +418,16 @@ topic_model = BERTopic(
 topic_model.fit(documents=docs)
 ```
 
-This snippet of code takes a long time to run (>10 mins) as each element must be embedded first. 
+This snippet of code takes a long time to run (>10 mins) as each element must be embedded first.
 
 To avoid unnecessary computation time, we have embedded 6500 elements with several models for the French and English abstracts that you can download from [Zenodo](https://doi.org/10.5281/zenodo.17416954). The code changes as such: 
 
 ```python
+from bertopic import BERTopic
+from sklearn.feature_extraction.text import CountVectorizer
+from stopwordsiso import stopwords
+from datasets import load_from_disk
+
 language = "english" # or "french"
 language_short = language[:2] # "en" or "fr"
 
@@ -401,7 +437,6 @@ docs = np.array(ds[f"resumes.{language_short}"]) # 6500 rows
 embeddings = np.array(ds["embedding"])			 # Shape : 6500 x 768
 
 vectorizer_model = CountVectorizer(stop_words = list(stopwords(language_short)))
-
 
 topic_model = BERTopic(
 	language = language,
@@ -440,7 +475,6 @@ topic_info
 : Topic information (truncated) of the French dissertations for a basic topic model {#tbl-topics-truncated tbl-colwidths="[10, 10, 10, 70]"}
 
 The "Representation" column provides the keywords for each topic. We can see that the keywords retrieved for the noise cluster are very generic: "study", "thesis", "model", "analysis", "approach" and do not convey any meaningful information other than the fact that all documents are academic documents.
-<br/>
 
 For each topic, the model identifies apparently consistent keywords : 
 
@@ -488,14 +522,14 @@ The first thing we want to visualise is the space of the embeddings reduced to 2
 		docs = docs,
 		embeddings = embeddings,
 		hide_annotations = True, # better readability
-		topics = [0,1,2,3]       # Select topics to highlight
+		topics = [0,1,2,3],      # Select topics to highlight
 		# height = 300, # Adjust the height of the plot
 		# width = 800 # Adjust the width of the plot 
 	)
 )
 ```
 
-![2D plot of the French dissertations for a basic topic model[^18]](./../assets/bertopic-tutorial/tuto_2d_plot.png){#fig-2d-plot}
+![2D plot of the French dissertations for a basic topic model[^18]](assets/bertopic-tutorial/tuto_2d_plot.png){#fig-2d-plot}
 
 On this graph only displaying the 4 top topics, we can see that the cluster are large and dense. We can see that the "1_mechanical_numerical_behavior" and the "3_flow_numerical_fluid" are close, as expected whereas "0_literary_writing_art" and "2_cells_cancer_tumor" are further apart in separate directions.
 
@@ -513,7 +547,7 @@ topic_model.visualize_barchart(
 )
 ```
 
-![Top $n$ words per topic of the French dissertations for a basic topic model](./../assets/bertopic-tutorial/tuto_top_n_words.png){#fig-top-n-words}
+![Top $n$ words per topic of the French dissertations for a basic topic model](assets/bertopic-tutorial/tuto_top_n_words.png){#fig-top-n-words}
 
 Take the topic n°5, we can see keywords like "urban", "land", "city", "local", "public" and "ecological". These keywords make sense together and we can imagine dissertations discussing urban planning at different scales and under different constraints.
 
@@ -522,10 +556,10 @@ Take the topic n°5, we can see keywords like "urban", "land", "city", "local", 
 A good way to visualise how topics interact with each other is to plot a dendogram. This plot is read from left to right, the sooner branches merge, the closer related topics are. We use the `visualize_hierarchy` method. The graph is very tall but we can easily focus on one subset of the tree at a time.
 
 ```python
-fig = topic_model.visualize_hierarchy()
+topic_model.visualize_hierarchy()
 ```
 
-![Hierarchical graph of the French dissertations for a basic topic model](./../assets/bertopic-tutorial/tuto_hierarchical.png){#fig-hierarchical-plot}
+![Hierarchical graph of the French dissertations for a basic topic model](assets/bertopic-tutorial/tuto_hierarchical.png){#fig-hierarchical-plot}
 
 At the very top of this graph, we can see the green branches related to laws and international law, very close to contract law. This is a sign that these three branches merge together and that we dont find legislation-related keywords anywhere else in the three.
 
@@ -545,7 +579,7 @@ topic_model.reduce_topics(docs = docs, nr_topics=7 + 1) #Add one to account for 
 topics_reduced, probabilities_reduced = topic_model.topics_, topic_model.probabilities_
 ```
 
-Then check the new representations like in the section @sec-create-instance.
+Then check the new representations like in the @sec-create-instance.
 
 ```python
 topic_info_reduced = topic_model.get_topic_info()
@@ -617,13 +651,16 @@ The primary factor to tune is the embedding model, because it drastically impact
 
 At this point you can also try different values for `n_neighbors` and `n_components`. However, be aware that the influence of UMAP parameters on the final topic model is difficult to appreciate at first glance.
 
-**Tune the granularity of the topic model** (parameters tuned: `n_neighbors` and `min_cluster_size`)
+**2. Tune the granularity of the topic model** (parameters tuned: `n_neighbors` and `min_cluster_size`)
 
 Once you've chosen an embedding model, you can change the `n_neighbors` and `min_cluster_size`. Both work jointly: the lower these parameters, the smaller the grain and the more specific the topics. It is worth noting that these parameters are dependant of the size of your corpus. For a corpus of 5,000 documents, `n_neighbors=300` is a large value, but for 50,000 documents it might be a medium value.
 
 To change these parameters, one must explicitly declare `UMAP` and `HDBSCAN` objects and pass them on to the `BERTopic` model:
 
 ```python
+from umap import UMAP
+from hdbscan import HDBSCAN
+
 # Load data and create the vectorizer model like before
 language = "english" # or "french"
 language_short = language[:2] # "en" or "fr"
@@ -662,18 +699,18 @@ topics, probabilities = topic_model.fit_transform(
 
 We obtain the following results: 
 
-|   Topic |   Count | Representation                                                                                                       |
-|--------:|--------:|:---------------------------------------------------------------------------------------------------------------------|
-|      -1 |    1422 | ['study', 'thesis', 'model', 'based', 'data', 'analysis', 'method', 'process', 'approach', 'developed']              |
-|       0 |    1399 | ['law', 'study', 'political', 'social', 'thesis', 'public', 'legal', 'analysis', 'economic', 'international']        |
-|       1 |    1339 | ['properties', 'model', 'study', 'materials', 'experimental', 'temperature', 'thesis', 'method', 'studied', 'based'] |
-|       2 |    1329 | ['cells', 'cell', 'expression', 'study', 'role', 'protein', 'species', 'model', 'activity', 'involved']              |
-|       3 |     706 | ['data', 'thesis', 'systems', 'propose', 'based', 'model', 'proposed', 'approach', 'network', 'methods']             |
-|       4 |     305 | ['language', 'teachers', 'study', 'education', 'students', 'french', 'school', 'teaching', 'analysis', 'social']     |
+|   Topic |   Count | Representation                                                                                           |
+|---:|---:|:---|
+|      -1 |     837 | ['thesis', 'model', 'study', 'data', 'based', 'method', 'analysis', 'developed', 'approach', 'time']     |
+|       0 |    2917 | ['study', 'model', 'cells', 'properties', 'thesis', 'cell', 'studied', 'based', 'role', 'development']   |
+|       1 |    2011 | ['study', 'social', 'thesis', 'law', 'analysis', 'political', 'french', 'public', 'based', 'approach']   |
+|       2 |     735 | ['data', 'thesis', 'systems', 'propose', 'based', 'model', 'approach', 'proposed', 'network', 'methods'] |
+
+
 
 : Topic information for a coarse grained topic model {#tbl-topics-tuned tbl-colwidths="[10, 20, 70]"}
 
-![2D map for a coarse grained topic model](./../assets/bertopic-tutorial/2D_general.png){#fig-2D-map-tuned}
+![2D map for a coarse grained topic model](assets/bertopic-tutorial/2D_coarse_grain.png){#fig-2D-map-tuned}
 
 ## Additional visualisations: cross-reference with additional tags{#sec-additional-visualisations}
 
@@ -717,9 +754,9 @@ topic_model.visualize_topics_per_class(
 )
 ``` 
 
-![Topics distributed over the OAI tags of the French theses for a basic topic model](./../assets/bertopic-tutorial/tuto_topics_per_class.png){#fig-topic-per-class}
+![Topics distributed over the OAI tags of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_topics_per_class.png){#fig-topic-per-class}
 
-In this figure, we can start by checking that documents are associated to the right topic. For instance, it is coherent to see that documents of the topic '1_mechanical_numerical_behavior' are found in theses in Physics, Engineering Sciences; and that theses of the topic '2_cells_cancer_tumor' are found in theses in Health and Medicine as well as in Biology and Biochemistry.
+In this figure, we can start by checking that documents are associated to the right topic. For instance, it is coherent to see that documents of the topic '1_cells_cell_expression_role' are found in theses in Health and Medicine as well as in Biology and Biochemistry and that documents of the topic '2_model_numerical_study_method' are found in theses in Physics and Engineering science, . 
 
 If you want to visualise your topics on a temporal axis, you can use the the `visualize_topics_over_time` method.
 
@@ -729,7 +766,7 @@ topics_over_time = topic_model.topics_over_time(docs = docs, timestamps=year)
 topic_model.visualize_topics_over_time(topics_over_time, topics = [0,1,2,3])
 ```
 
-![Number of theses over the years in each group of the French theses for a basic topic model](./../assets/bertopic-tutorial/tuto_temporal_axis.png){#fig-temporal-axis}
+![Number of theses over the years in each group of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_temporal_axis.png){#fig-temporal-axis}
 
 # Evaluate your topic model{#sec-evaluate-your-topic-model}
 
@@ -875,7 +912,7 @@ Now that you have a good understanding of BERTopic, and you started to experimen
 
 For reproducibility purposes, BERTopic lets you save the BERTopic object you created with the `save`[^25] method. Two parameters of importance:
 
-- `serialization (str)`: must be `"safetensors"`, `"pickle"` or `"pytorch"`. We recommend using `"safetensors"` or the `"pytorch"` format as they are broadly used in machine learning and recommended by the [BERTopic documentation](https://maartengr.github.io/BERTopic/api/bertopic.html#bertopic._bertopic.BERTopic.save)[^6].
+- `serialization (str)`: must be `"safetensors"`, `"pickle"` or `"pytorch"`. We recommend using `"safetensors"` or the `"pytorch"` format as they are broadly used in machine learning and recommended by the [BERTopic documentation](https://maartengr.github.io/BERTopic/api/bertopic.html#bertopic._bertopic.BERTopic.save).
 - `save_ctfidf (bool)` : wether to save the vectorizer configuration or not. This is the heaviest bit (see table below).
 
 ```python

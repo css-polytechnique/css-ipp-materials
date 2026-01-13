@@ -1,5 +1,5 @@
 ---
-title: "The General Inquirer at the time of LLMs: a BERTopic tutorial"
+title: "The General Inquirer in the time of LLMs: a BERTopic tutorial"
 author: 
     - name: A. Morin
       email: axel.morin@polytechnique.etu
@@ -32,6 +32,8 @@ format:
 toc: true
 toc-depth: 3
 ---
+
+_[The General Inquirer](https://mitpress.mit.edu/9780262690119/the-general-inquirer/), published in 1966, is the first algorithm attempting at recognising recurrent patterns in text data._
 
 # Introduction 
 

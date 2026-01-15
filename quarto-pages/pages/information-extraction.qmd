@@ -1,0 +1,465 @@
+---
+title: "Information Extraction with generative LLMs"
+author: 
+    - name: E. Bonutti d'Agostini
+      email: emma.bonutti@sciencespo.fr
+      role: "Author"
+    - name: É. Schultz
+      orcid: 0000-0002-6215-3606
+      url: https://emilienschultz.github.io
+      role: "Author"
+    - name: É. Ollion
+      orcid: 0000-0003-3099-5240
+      url: https://ollion.cnrs.fr
+      role: "Co-Author"
+    - name: A. Morin
+      email: axel.morin@polytechnique.etu
+      role: "Co-Author"
+format: 
+    html:
+        include-in-header:
+            - text: |
+                <script>
+                    var _paq = window._paq = window._paq || [];
+                    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+                    _paq.push(["setDocumentTitle", document.domain + "/" + document.title]);
+                    _paq.push(["setCookieDomain", "*.www.css.cnrs.fr"]);
+                    _paq.push(["setDomains", ["*.www.css.cnrs.fr"]]);
+                    _paq.push(['trackPageView']);
+                    _paq.push(['enableLinkTracking']);
+                    (function() {
+                        var u="https://analyseweb.huma-num.fr/";
+                        _paq.push(['setTrackerUrl', u+'matomo.php']);
+                        _paq.push(['setSiteId', '342']);
+                        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+                    })();
+                </script>
+toc: true
+toc-depth: 3
+---
+
+In previous tutorials, we covered how generative AI can assist social scientists in labelling a large amount of documents. In this tutorial, we focus on another Natural Language Processing (NLP) task: Information Extraction (IE). Based on the work of Oscar Stuhler et al. (2025), we introduce the key concepts and limits so that you can make the most of this tool. 
+
+# The Information Extraction task
+The task "Information Extraction" covers numerous methods attempting at retrieving information from unstructured textual data. Methods include Named Entity Recognition (NER) or relation extraction. These methods are broadly used in research, but, to this day, few social science research projects have used these automated tools. 
+
+Nevertheless, sociologists have developed their own forms to complete similar tasks. For instance, in the 1990s, Franzosi (1989) had conceptualised a subject-action-object coding scheme to extract information from newspapers. In the 2010s, some research projects used syntax-based parsers to speed up the analysis. For instance, Goldenstein and Poschmann retrieved subject-verb-object triplets from business to study corporate responsibility discourse. However, syntax-based parsers need rigid assumptions regarding the information parsed, making it difficult to observe shifts or boundaries of established categories. For more examples, [read the full article (p4-5)](https://osf.io/wjvfq_v1). Some
+
+One of the greatest advantages of using genAI for IE tasks is its flexibility. Until now, researchers had developed highly specific tools that did not generalise to new contexts. Prompt-based IE mitigates this limit; however, to correctly use such tools, one needs to rigorously define the information they want to extract.
+
+# The limits of using generative AI for IE 
+
+One of the major pitfalls of using genAI for IE is the non-randomness of errors. Indeed, generative LLMs are famously known for learning patterns learned from their training data and repeating their biases. Working with potentially biased predictions can be seriously hazardous for the downstream analysis.
+
+Furthermore, using genAI for your research is not devoid of problems. Still today, decoder models’ performance is very task-dependent (Ollion et al., 2023). Also, relying on proprietary models hinders project reproducibility and results stability (Barrie et al., 2025). Finally, environmental (Luccioni, 2024), privacy and copyright issues need to be considered seriously before using these tools. This is especially true if you are sending content to a third party, using an API or an interface. 
+
+# Information Extraction in practice
+
+In this tutorial we demonstrate how to use the `openai` Python library and we analyse obituaries to retrieve the gender of a deceased person and the educational institution they attended.
+
+## Data
+
+We use a sample of 300 obituaries and metadata from the New York Times. For confidentiality reasons, the sample has been altered; the sample is synthetic. The goal is to retrieve the gender of the deceased person as well as the educational institution attended. 
+
+The dataset is available on the [Github repository](https://github.com/css-polytechnique/css-ipp-materials/tree/main), let's open it: 
+
+```python 
+url = "https://github.com/css-polytechnique/css-ipp-materials/raw/refs/heads/main/Python-tutorials/SICSS-2025/information-extraction/20241009_Synthetic300.csv"
+obits = pd.read_csv(url)
+```
+
+The dataset contains many columns listed below:
+
+- nid
+- gender
+- name
+- birth_month
+- birth_day
+- birth_year
+- occup
+- occup_elaborate
+- children
+- stepson
+- survivors
+- survivors_children
+- survivors_others
+- educ_inst
+- diploma
+- date_death
+- cause_death
+- milit
+- birth
+- raised
+- last_lived
+- place_death
+- Religion
+- text
+- text_tok
+- text_char
+
+We will only use the column `"date_death"` and `"text"` to extract information from and `"gender"`, `"educ_inst"` as a ground truth.
+
+As a preprocessing step, we drop unused columns and combine the text and the date of death:
+
+```python 
+obits = obits[["date_death", "text", "gender", "educ_inst"]]
+obits["text_combined"] = obits.apply(
+    lambda row: f"Date: {row['date_death']}\nObituary: {row['text']}", 
+    axis = 1
+)
+```
+
+## Set up the API
+
+To make API calls, we first need to create an `OpenAI` object with the [OpenRouter](https://openrouter.ai/) URL and your key (to get your key, [follow these steps](https://openrouter.ai/docs/guides/overview/auth/provisioning-api-keys)).
+
+```python
+from openai import OpenAI
+# API, Key, and Model selection
+api_url = "https://openrouter.ai/api/v1"
+api_key = "YOUR KEY" # INSERT YOUR KEY HERE
+ 
+client = OpenAI(
+  base_url=api_url,
+  api_key=api_key,
+)
+```
+
+Now that we have created a connection to the model, we can easily send a request. A request is a list of messages, with each message being a dictionary with a `"role"` and a `"content"` key.
+
+```python 
+messages = [
+  {
+    "role": "system",
+    "content": "You are an efficient research assistant helping with text annotation."
+  },
+  {
+    "role": "user",
+    "content": "Annotate this following text: xxxx"
+  }
+]
+``` 
+
+The `"role"` attribute provides context for the LLM to respond most appropriately ([read more](https://www.clarifai.com/blog/agentic-prompt-engineering)). There are three main roles:
+
+- `"system"`: provides instructions as to how the model should behave.
+- `"user"`: represents the content of your message, ie the question as well as the text.
+- `"assistant"`: represents the answer of the LLM. You do not want to use this role unless you are using few-shot prompts or continuing a conversation.
+
+Let’s check if everything works:
+
+```python 
+response = CLIENT.chat.completions.create(
+    model="meta-llama/llama-3.3-70b-instruct",
+    messages=[{"role": "user", "content": "Hello, Llama. Say Hi!"}]
+)
+```
+
+The response contains much metadata, such as the number of tokens generated. The answer can be found:
+
+```python
+print(response.choices[0].message.content)
+```
+
+```txt
+Hi! It's nice to meet you. Is there something I can help you with or would you like to chat?
+```
+
+We have just made our first API call!
+
+To complete the setup, we create a generic API call function. The function should take in the model name, a list of texts and a prompt generator. For each text, the function should create the prompt with the prompt generator, call the API and save the answer.
+
+```python 
+from collections.abc import Callable
+ 
+def get_predictions(texts: list[str], model: str, prompt_generator : Callable):
+  """
+  Inference with the API for a model, a list of texts and a prompt format
+  """
+  results = []
+  for index,text in enumerate(texts):
+    try:
+      print(f"\rRequest element {index}", end= "")
+      completion = CLIENT.chat.completions.create(
+        model=model,
+        messages=prompt_generator(text)
+      )
+      results.append(completion.choices[0].message.content)
+    except Exception as e:
+      print(e)
+      results.append(None)
+  print("\rPrediction finished")
+  return results
+```
+
+## Extract the gender and evaluate performance
+
+Now that everything is set up, we can create a prompt to ask the LLM to retrieve the gender of the deceased person. The gender variable is categorical, we ask the LLM to tell if the deceased person was a `"man"`, `"woman"` or `"other"`. This task is close to a classification problem illustrated in this [tutorial](https://www.css.cnrs.fr/classification-with-generative-llms-and-api-calls/).
+
+```python
+def prompt_user_gender(text):
+    prompt_system = (
+        "You are a highly efficient information detection and extraction engine, "
+        "specialized in analyzing natural language data.\n"
+        "You value accuracy: when the user asks you to extract certain information "
+        "from given text data, you will try your best to adhere to what is directly "
+        "mentioned in the text and the extraction criteria.\n"
+        "You value efficiency: your responses will be very concise, because they will "
+        "be stored as values in a dataset. These responses will also strictly follow "
+        "formatting conventions specified in the extraction prompt. "
+    )
+    prompt_user = (
+        "Below I will provide an obituary of a deceased person.\n"
+        "Based on the text, infer the gender of the deceased person. Provide a "
+        "one-word response from only one of the following options: 'man', 'woman'"
+        ", 'other'.\n\n"
+        f"The text : {text}"
+    )
+    #Text of the system prompt
+    return [
+       {"role":"system","content":prompt_system},
+       {"role":"user","content": prompt_user}]
+
+prompt_user_gender(obits.loc[1,"text_combined"])
+```
+
+```txt 
+[{'role': 'system',
+  'content': 'You are a highly efficient information detection and extraction engine, specialized in analyzing natural language data.\nYou value accuracy: when the user asks you to extract certain information from given text data, you will try your best to adhere to what is directly mentioned in the text and the extraction criteria.\nYou value efficiency: your responses will be very concise, because they will be stored as values in a dataset. These responses will also strictly follow formatting conventions specified in the extraction prompt. '},
+ {'role': 'user',
+  'content': "Below I will provide an obituary of a deceased person.\nBased on the text, infer the gender of the deceased person. Provide a one-word response from only one of the following options: 'man', 'woman', 'other'.\n\nThe text : Date: October 1st, 2024\nObituary: John Deer, a distinguished forensic scientist known for his groundbreaking work in criminal investigations, passed away on October 7th, 2024, at his home in New York. He was 82 years old.\n\nBorn on May 3, 1942, in Providence, Rhode Island, John showed an early interest in the intricacies of science. Raised in the same city where he was born, he attended Bowdoin College, where he excelled in his studies, ultimately obtaining a college diploma.\n\nDeer's career as a forensic scientist was marked by his unwavering commitment to seeking justice through evidence-based investigations. His keen attention to detail and analytical skills helped solve numerous complex cases, earning him a reputation as a pioneer in his field. One of his notable contributions was the development of a new DNA analysis technique that revolutionized forensic procedures.\n\nDuring his time in Vietnam, where he served in the military, John Deer demonstrated courage and dedication to his duties, receiving commendations for his service. His experiences in the field further honed his investigative skills, shaping his future endeavors.\n\nDespite his professional achievements, John was a humble and kind-hearted individual, known for his wit and sense of humor. He had a passion for woodworking and often spent his free time creating intricate pieces of furniture for his loved ones. His meticulous craftsmanship and attention to detail were evident in every piece he crafted, reflecting his precise and methodical nature.\n\nIn his personal life, John was a devoted stepfather to his stepdaughter, Sarah, whom he cherished as his own. Although he did not have any biological children, he formed deep and meaningful bonds with his extended family and friends, who remember him fondly for his warmth and generosity.\n\nJohn Deer's sudden passing due to complications of a stroke has left a void in the forensic science community and among those who knew him. His legacy of integrity, professionalism, and dedication to his work will continue to inspire future generations of forensic scientists.\n\nIn remembrance of John, his colleagues and loved ones recall the countless times he shared his expertise with aspiring young scientists and mentored them with patience and encouragement. His commitment to excellence and his willingness to guide others in their professional journeys made him a beloved figure in the forensic science community.\n\nAs we bid farewell to John Deer, we celebrate a life well-lived, rich with accomplishments and milestones that have left an indelible mark on the field of forensic science. He will be deeply missed by all who had the privilege of knowing him, but his legacy will endure through the continued impact of his work and the lives he touched."}]
+```
+
+We can now use the `get_predictions` function to make the API calls:
+
+```python
+N_pred = 5
+obits_sample = obits.sample(N_pred)
+predictions_gender = get_predictions(
+    texts = obits_sample['text_combined'],
+    model = "meta-llama/llama-3.3-70b-instruct",
+    prompt_generator = prompt_user_gender,
+)
+```
+
+Now to compare and evaluate the performace: 
+
+```python 
+obits_sample.loc[:, "predictions_gender"] = predictions_gender
+print("Accuracy of the model: ", (obits_sample["gender"]==obits_sample["predictions_gender"]).mean())
+obits.loc[:N_pred, ["gender", "predictions_gender"]]
+```
+
+```txt
+Accuracy of the model:  1.0
+```
+
+|    | gender   | predictions_gender   |
+|---:|:---------|:---------------------|
+|  0 | man      | man                  |
+|  1 | man      | man                  |
+|  2 | man      | man                  |
+|  3 | man      | man                  |
+|  4 | man      | man                  |
+|  5 | man      | man                  |
+
+We tested on a handful of obituaries to prevent making too many API calls. However, we can see that the LLM is able to accurately retrieve the gender of the deceased person. This task is fairly easy, given that the pronouns are repeated throughout the obituary. Feel free to increase the number of obituaries; beware of the price!
+
+## Extract the Educational Institution attended
+
+Retrieving the Educational Institution attended is a trickier task for two reasons. First, the Educational Institution attended may not be provided, or there may be multiple institutions listed because they studied or worked there. Then, evaluating and using the retrieved information may be difficult depending on how the institution was written; for instance, the University of California, Los Angeles can be spelled UCLA. We will illustrate this limit later.
+
+Let's create a new prompt and make the API calls:
+
+```python
+def prompt_user_educinstit(text):
+  prompt_system = (
+    "You are a highly efficient information detection and extraction engine, "
+    "specialized in analyzing natural language data.\n"
+    "You value accuracy: when the user asks you to extract certain information "
+    "from given text data, you will try your best to adhere to what is directly "
+    "mentioned in the text and the extraction criteria.\n"
+    "You value efficiency: your responses will be very concise, because they will "
+    "be stored as values in a dataset. These responses will also strictly follow "
+    "formatting conventions specified in the extraction prompt. "
+  )
+  
+  prompt_user = (
+    "Below I will provide an obituary of a deceased person."
+    "Record all institutions of higher education that the person obtained a "
+    "degree from (i.e., universities, colleges, or graduate & professional schools), "
+    "exactly as written in the text. If the text indicates that this person "
+    "attended some institution as a student, but did not complete their degree, "
+    "record this institution as well. When giving your response, consider the "
+    "following rules:\n"
+    "1) Do not include high schools or college preparatory schools.\n"
+    "2) Do not include institutions that the person's friends, family, coworkers "
+    "or partners attended, unless the deceased person also attended them.\n"
+    "3) Obituaries may describe decedents who were employed at academic "
+    "institutions, such as instructors, scientists, university administrators "
+    "and coaches. You must distinguish higher education institutions that this "
+    "person studied at from those that this person worked at. Only institutions "
+    "where the person studied should be considered in your response. Do not "
+    "record higher education institutions only because the person worked, taught, "
+    "or held a job there. For example, if the text says “after transferring from "
+    "University 1 to study mathematics at University 2, he eventually got a "
+    "master's degree from University 3. He became a head coach at University 4 "
+    "and taught sports science at University 5”, your response should only "
+    "include Universities 1, 2 and 3, but not University 4.\n"
+    "4) If universities are famously know with it's initials, give them instead "
+    "of the full name (i.e. MIT for Massachusetts Institute of Technology)"
+    "If the text does not mention any institutions of higher education that "
+    "the person attended, simply respond with 'none'.\n"
+    "If your response is a list of two or more institutions, please separate each"
+    " institution with a comma (e.g.: 'university 1, university 2, university 3').\n\n"
+    f"The text : {text}"
+  )
+  return [
+       {"role":"system","content":prompt_system},
+       {"role":"user","content": prompt_user}]
+
+N_pred = 5
+obits_sample = obits.sample(N_pred)
+predictions_educ_instit = get_predictions(
+    texts = obits_sample['text_combined'],
+    model = "meta-llama/llama-3.3-70b-instruct",
+    prompt_generator = prompt_user_educinstit,
+)
+```
+
+Then evaluating the performance we get: 
+
+```python
+obits_sample.loc[:, "predictions_educ_instit"] = predictions_educ_instit
+print("Accuracy of the model: ", (obits_sample["educ_inst"]==obits_sample["predictions_educ_instit"]).mean())
+print((obits_sample[["educ_inst", "predictions_educ_instit"]].to_markdown()))
+```
+
+```txt
+Accuracy of the model:  0.6
+```
+
+|     | educ_inst                                    | predictions_educ_instit                                         |
+|----:|:---------------------------------------------|:----------------------------------------------------------------|
+| 210 | UCLA                                         | UCLA                                                            |
+|  46 | Brown                                        | Brown University                                                |
+|  91 | United States Military Academy at West Point | Community college, United States Military Academy at West Point |
+|  77 | Yale                                         | Yale                                                            |
+| 101 | Swarthmore College                           | Swarthmore College                                              |
+
+Here we can see two types of mistakes exist:
+
+- When the model truly makes a mistake, for instance it retrieves "a small film school in New York City" when it is absent from the golden truth.
+- When the model finds the right answer but spelled differently, for instance it returns "Brown University" where the golden truth is "Brown".
+
+We can try and mitigate these errors with different strategies:
+
+- format the answer: lower case, remove punctuation or certain words, such as "University".
+- use a levenshtein distance[^1] to allow for minor spelling differences.
+- human as a judge: check where the institutions do not match and a judge can arbitrate if this is a spelling mistake or a true mistake.
+- LLM as a judge: ask an LLM to compare the institutions and judge if it is a spelling mistake or a true mistake.
+
+We will setup a formating strategy and use the levenshtein distance to allow for minor spelling mistakes. Finally a human will be make the final validation.
+
+```python
+import string # to get punctuation
+import Levenshtein # to measure the distance between strings
+
+def clean_format(ch: str | Any) -> str | None:
+    if not isinstance(ch, str):
+        return None
+
+    ch = (
+        ch
+        .lower()
+        .translate(str.maketrans('', '', string.punctuation)) # remove punctuations
+        .replace(" ", "")          # remove blank spaces
+        .replace("university", "") # remove the word "university" 
+        .replace("college", "")    # remove the word "college"
+    )
+
+    if ch in ["not mentioned", "none"]:
+        return None
+    return ch
+
+def close_enough(ch1: str, ch2: str, threshold : int = 1)->bool:
+    return Levenshtein.distance(ch1,ch2) <= threshold
+
+def eval_equality(ch1: str|Any, ch2: str|Any, threshold : int = 1)->bool:
+    # format entries
+    ch1 = clean_format(ch1)
+    ch1_is_none : bool = ch1 is None
+    ch2 = clean_format(ch2)
+    ch2_is_none: bool = ch2 is None
+
+    if ch1_is_none or ch2_is_none:
+        # If one of them is none, then there is no need to 
+        # evaluate the levenshtein distance, 
+        # if both of them are none, we return True, 
+        # if only one of them is none, we return False
+        return ch1_is_none and ch2_is_none
+    
+    return close_enough(ch1, ch2, threshold= threshold)
+
+obits_sample.loc[:, "automatic_validation"] = (
+    obits_sample
+    .apply(
+        lambda row: eval_equality(row["educ_inst"], row["predictions_educ_instit"]),
+        axis = 1
+    )
+)
+obits_sample[["educ_inst", "predictions_educ_instit", "automatic_validation"]]
+```
+
+|     | educ_inst                                    | predictions_educ_instit                                                 | automatic_validation   |
+|----:|:---------------------------------------------|:------------------------------------------------------------------------|:-----------------------|
+| 210 | UCLA                                         | UCLA                                                                    | True                   |
+|  46 | Brown                                        | Brown University                                                        | True                   |
+|  91 | United States Military Academy at West Point | United States Military Academy at West Point, a small community college | False                  |
+|  77 | Yale                                         | Yale                                                                    | True                   |
+| 101 | Swarthmore College                           | Swarthmore College                                                      | True                   |
+
+We could automatically validate that "Brown University" and "Brown" are the same.
+
+Finally, we can save the mismatching rows as an excel file, validate the results by hand and remerge the results: 
+
+```python
+mismatches = obits_sample.loc[~obits_sample["automatic_validation"]]
+mismatches.loc[:,"hand_validation"] = None
+mismatches.to_excel("./obits_sample_TO_VALIDATE.xlsx", index = True)
+```
+
+Then:
+
+```python
+hand_validated_rows = pd.read_excel("./obits_sample_VALID.xlsx", index_col=0)
+obits_sample["final_validation"] = obits_sample["automatic_validation"]
+obits_sample.loc[hand_validated_rows.index,"final_validation"] = hand_validated_rows["hand_validation"]
+obits_sample[["educ_inst", "predictions_educ_instit", "automatic_validation", "final_validation"]]
+```
+
+|     | educ_inst                                    | predictions_educ_instit                                         | automatic_validation   | final_validation   |
+|----:|:---------------------------------------------|:----------------------------------------------------------------|:-----------------------|:-------------------|
+| 210 | UCLA                                         | UCLA                                                            | True                   | True               |
+|  46 | Brown                                        | Brown University, the prestigious acting school                 | False                  | True               |
+|  91 | United States Military Academy at West Point | community college, United States Military Academy at West Point | False                  | False              |
+|  77 | Yale                                         | Yale                                                            | True                   | True               |
+| 101 | Swarthmore College                           | Swarthmore College                                              | True                   | True               |
+
+
+# Conclusion and advice 
+
+In this tutorial, we presented how to leverage generative LLMs to rapidly retrieve information in a text. This technique is particularly interesting if you possess large amounts of unstructured textual data and want to retrieve specific pieces of information. Using genAI does not relieve researchers from the conceptualisation work of defining the information to extract and the relevance for their work.
+
+We covered how to make API calls with the `openAI` library and demonstrated with two cases from (synthetic) obituaries from the NYT: retrieving the gender of a deceased person and the educational institution they attended. The first task was fairly easy with good accuracies whereas the second task was trickier in itself, but also trickier to evaluate if the retrieved information is correct. To arbitrate difficult cases, we covered several solutions based on automatic formatting and the human-as-a-judge method. 
+
+Now, if you want to use IE in your research project, you might want to consider trying different models to find one that best suits your needs. The paper highlights that the llama 70B perfectly extracts explicit information such as the gender, the age, or the cause of death, but struggles with more complex information such as the education level or the origin.<br/> 
+
+Another important aspect that needs reflection is the crafting of the prompt. Some techniques, like chain-of-thoughts, can significantly improve the accuracy of the IE. <br/>
+
+Also, some tasks, like retrieving information conveyed through regular expressions, such as the age or gender, one might want to consider simpler methods or parsers with equal performance. Again, each use case needs to be carefully considered and conceptualised before making use of resource-intensive generative AI.
+
+Finally, they urge anyone to carefully validate their results before moving on to further analysis. 
+
+[^1]: The levenshtein distance is calculated as the minimum number of edits necessary to go from a word to another. For example, the levenshtein distance from "HELLO" to "HALO" is 2 (delete one L and change the E to A).

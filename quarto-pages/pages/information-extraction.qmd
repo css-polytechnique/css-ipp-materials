@@ -2,7 +2,7 @@
 title: "Information Extraction with generative LLMs"
 author: 
     - name: E. Bonutti d'Agostini
-      email: emma.bonutti@sciencespo.fr
+      orcid: 0009-0009-4246-1415
       role: "Author"
     - name: É. Schultz
       orcid: 0000-0002-6215-3606
@@ -13,7 +13,7 @@ author:
       url: https://ollion.cnrs.fr
       role: "Co-Author"
     - name: A. Morin
-      email: axel.morin@polytechnique.etu
+      email: axel.morin@polytechnique.edu
       role: "Co-Author"
 format: 
     html:

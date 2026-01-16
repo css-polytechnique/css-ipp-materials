@@ -39,28 +39,32 @@ toc: true
 toc-depth: 3
 ---
 
-In previous tutorials, we covered how generative AI can assist social scientists in labelling a large amount of documents. In this tutorial, we focus on another Natural Language Processing (NLP) task: Information Extraction (IE). Based on the work of Oscar Stuhler et al. (2025), we introduce the key concepts and limits so that you can make the most of this tool. 
+In previous tutorials, we covered how generative AI can help social scientists in labelling a large amount of documents. In this tutorial, we focus on another Natural Language Processing (NLP) task: Information Extraction (IE). Based on the work of Oscar Stuhler et al. (2025), we introduce the key concepts and limits so that you can make the most of this tool. 
 
-# The Information Extraction task
+# The Information Extraction Task
 The task "Information Extraction" covers numerous methods attempting at retrieving information from unstructured textual data. Methods include Named Entity Recognition (NER) or relation extraction. These methods are broadly used in research, but, to this day, few social science research projects have used these automated tools. 
 
-Nevertheless, sociologists have developed their own forms to complete similar tasks. For instance, in the 1990s, Franzosi (1989) had conceptualised a subject-action-object coding scheme to extract information from newspapers. In the 2010s, some research projects used syntax-based parsers to speed up the analysis. For instance, Goldenstein and Poschmann retrieved subject-verb-object triplets from business to study corporate responsibility discourse. However, syntax-based parsers need rigid assumptions regarding the information parsed, making it difficult to observe shifts or boundaries of established categories. For more examples, [read the full article (p4-5)](https://osf.io/wjvfq_v1). Some
+Nevertheless, sociologists have developed their own forms to complete similar tasks. For instance, in the 1990s, Franzosi (1989) had conceptualised a "subject-action-object triplet" to extract information from newspapers. In the 2010s, some research projects used syntax-based parsers to speed up their analyses. For instance, Goldenstein and Poschmann retrieved subject-verb-object triplets from companies to study corporate responsibility discourse. However useful, syntax-based parsers need rigid assumptions regarding the information parsed, making it difficult to observe shifts or boundaries of established categories. For more examples, [see the article (p. 4-5)](https://osf.io/wjvfq_v1).
 
-One of the greatest advantages of using genAI for IE tasks is its flexibility. Until now, researchers had developed highly specific tools that did not generalise to new contexts. Prompt-based IE mitigates this limit; however, to correctly use such tools, one needs to rigorously define the information they want to extract.
+One of the main advantages of using genAI for IE tasks is, indeed, its flexibility. Until now, researchers had developed highly specific tools that did not generalise to new contexts. Prompt-based IE mitigates this limit; however, to correctly use such tools, one needs to rigorously define the information they want to extract.
 
 # The limits of using generative AI for IE 
 
-One of the major pitfalls of using genAI for IE is the non-randomness of errors. Indeed, generative LLMs are famously known for learning patterns learned from their training data and repeating their biases. Working with potentially biased predictions can be seriously hazardous for the downstream analysis.
+One of the major drawbacks of using genAI for IE is the non-randomness of errors. Indeed, generative LLMs are known for learning patterns learned from their training data and reproducing biases. Working with potentially biased predictions can raise serious issues for downstream analysis.
 
-Furthermore, using genAI for your research is not devoid of problems. Still today, decoder models’ performance is very task-dependent (Ollion et al., 2023). Also, relying on proprietary models hinders project reproducibility and results stability (Barrie et al., 2025). Finally, environmental (Luccioni, 2024), privacy and copyright issues need to be considered seriously before using these tools. This is especially true if you are sending content to a third party, using an API or an interface. 
+Furthermore, using genAI for research is not without problems. Even today, decoder models’ performance is highly task-dependent (see table in Ollion et al., 2023). Also, relying on proprietary models hinders project reproducibility and results stability (Barrie et al., 2025).
+
+Likewise, data protection (privacy and copyright) needs to be taken into account, especially if you are sending content to a third party, using an API or an interface. 
+
+Last but certainly not least, environmental impacts need to be seriously considered before using these tools (Luccioni, 2024). 
 
 # Information Extraction in practice
 
-In this tutorial we demonstrate how to use the `openai` Python library and we analyse obituaries to retrieve the gender of a deceased person and the educational institution they attended.
+In this tutorial, we show how to use the `openai` Python library to analyse obituaries to retrieve the gender of a deceased person and the educational institution they attended.
 
 ## Data
 
-We use a sample of 300 obituaries and metadata from the New York Times. For confidentiality reasons, the sample has been altered; the sample is synthetic. The goal is to retrieve the gender of the deceased person as well as the educational institution attended. 
+We use a sample of 300 obituaries and metadata mimicking those of the New York Times. For confidentiality reasons, the sample has been altered; the sample is synthetic. The goal is to retrieve the gender of the deceased person as well as the educational institution attended. 
 
 The dataset is available on the [Github repository](https://github.com/css-polytechnique/css-ipp-materials/tree/main), let's open it: 
 
@@ -69,36 +73,7 @@ url = "https://github.com/css-polytechnique/css-ipp-materials/raw/refs/heads/mai
 obits = pd.read_csv(url)
 ```
 
-The dataset contains many columns listed below:
-
-- nid
-- gender
-- name
-- birth_month
-- birth_day
-- birth_year
-- occup
-- occup_elaborate
-- children
-- stepson
-- survivors
-- survivors_children
-- survivors_others
-- educ_inst
-- diploma
-- date_death
-- cause_death
-- milit
-- birth
-- raised
-- last_lived
-- place_death
-- Religion
-- text
-- text_tok
-- text_char
-
-We will only use the column `"date_death"` and `"text"` to extract information from and `"gender"`, `"educ_inst"` as a ground truth.
+The dataset contains many columns, but we will only use the column `"date_death"` and `"text"` to extract information from and `"gender"`, `"educ_inst"` as a ground truth.
 
 As a preprocessing step, we drop unused columns and combine the text and the date of death:
 
@@ -195,7 +170,7 @@ def get_predictions(texts: list[str], model: str, prompt_generator : Callable):
 
 ## Extract the gender and evaluate performance
 
-Now that everything is set up, we can create a prompt to ask the LLM to retrieve the gender of the deceased person. The gender variable is categorical, we ask the LLM to tell if the deceased person was a `"man"`, `"woman"` or `"other"`. This task is close to a classification problem illustrated in this [tutorial](https://www.css.cnrs.fr/classification-with-generative-llms-and-api-calls/).
+Now that everything is set up, we can create a prompt to ask the LLM to retrieve the gender of the deceased person. The gender variable is categorical, we ask the LLM to indicate whether the deceased person was a `"man"`, `"woman"`, or `"other"`. This task is close to a classification problem illustrated in this [tutorial](https://www.css.cnrs.fr/classification-with-generative-llms-and-api-calls/).
 
 ```python
 def prompt_user_gender(text):
@@ -268,7 +243,7 @@ We tested on a handful of obituaries to prevent making too many API calls. Howev
 
 ## Extract the Educational Institution attended
 
-Retrieving the Educational Institution attended is a trickier task for two reasons. First, the Educational Institution attended may not be provided, or there may be multiple institutions listed because they studied or worked there. Then, evaluating and using the retrieved information may be difficult depending on how the institution was written; for instance, the University of California, Los Angeles can be spelled UCLA. We will illustrate this limit later.
+Retrieving the Educational Institution attended is a trickier task for two reasons. First, the Educational Institution attended may not be provided, or there may be multiple institutions listed because they studied or worked there. Second, evaluating and using the retrieved information may be difficult depending on how the institution was written; for instance, the University of California, Los Angeles can be spelled UCLA. We will illustrate this limit later.
 
 Let's create a new prompt and make the API calls:
 
@@ -350,17 +325,17 @@ Accuracy of the model:  0.6
 
 Here we can see two types of mistakes exist:
 
-- When the model truly makes a mistake, for instance it retrieves "a small film school in New York City" when it is absent from the golden truth.
-- When the model finds the right answer but spelled differently, for instance it returns "Brown University" where the golden truth is "Brown".
+- When the model truly makes a mistake, for instance it retrieves "a small film school in New York City" when this is absent from the original data (and not mentioned in our test set).
+- When the model finds the right answer but spelled differently, for instance it returns "Brown University" where the expert only annotated "Brown".
 
 We can try and mitigate these errors with different strategies:
 
-- format the answer: lower case, remove punctuation or certain words, such as "University".
-- use a levenshtein distance[^1] to allow for minor spelling differences.
-- human as a judge: check where the institutions do not match and a judge can arbitrate if this is a spelling mistake or a true mistake.
-- LLM as a judge: ask an LLM to compare the institutions and judge if it is a spelling mistake or a true mistake.
+- Format the answer: lower case, remove punctuation or certain words, such as "University".
+- Use a Levenshtein distance[^1] to allow for minor spelling differences.
+- Expert as a judge: check where the institutions do not match and a judge can arbitrate whether this is a spelling mistake or a true mistake.
+- Using LLMs as a judge: ask an LLM to compare the institutions and judge whether this is a spelling mistake or a true mistake. Make sure you check the results!
 
-We will setup a formating strategy and use the levenshtein distance to allow for minor spelling mistakes. Finally a human will be make the final validation.
+Below, we set up a formatting strategy and use the levenshtein distance to allow for minor spelling mistakes. Finally an expert will make the final validation.
 
 ```python
 import string # to get punctuation
@@ -448,15 +423,13 @@ obits_sample[["educ_inst", "predictions_educ_instit", "automatic_validation", "f
 | 101 | Swarthmore College                           | Swarthmore College                                              | True                   | True               |
 
 
-# Conclusion and advice 
+# Conclusion and Advice 
 
-In this tutorial, we presented how to leverage generative LLMs to rapidly retrieve information in a text. This technique is particularly interesting if you possess large amounts of unstructured textual data and want to retrieve specific pieces of information. Using genAI does not relieve researchers from the conceptualisation work of defining the information to extract and the relevance for their work.
+In this tutorial, we explained how to leverage generative LLMs to rapidly retrieve information in a text. This technique is particularly interesting if you possess large amounts of unstructured textual data and want to retrieve specific pieces of information. Using genAI does not relieve researchers from the conceptualisation work of defining the information to extract and the relevance for their work.
 
-We covered how to make API calls with the `openAI` library and demonstrated with two cases from (synthetic) obituaries from the NYT: retrieving the gender of a deceased person and the educational institution they attended. The first task was fairly easy with good accuracies whereas the second task was trickier in itself, but also trickier to evaluate if the retrieved information is correct. To arbitrate difficult cases, we covered several solutions based on automatic formatting and the human-as-a-judge method. 
+If you want to use IE in your research project, you might want to consider trying different models, to find one that best suits your needs. The paper highlights that the Llama 70B did a good job at extracting explicit information such as the gender, the age, or the cause of death, but struggled with more complex information such as the education level or the origin.
 
-Now, if you want to use IE in your research project, you might want to consider trying different models to find one that best suits your needs. The paper highlights that the llama 70B perfectly extracts explicit information such as the gender, the age, or the cause of death, but struggles with more complex information such as the education level or the origin.<br/> 
-
-Another important aspect that needs reflection is the crafting of the prompt. Some techniques, like chain-of-thoughts, can significantly improve the accuracy of the IE. <br/>
+Another important aspect that needs reflection is the crafting of the prompt. Some techniques, like chain-of-thoughts, can significantly improve the accuracy of the IE.
 
 Also, some tasks, like retrieving information conveyed through regular expressions, such as the age or gender, one might want to consider simpler methods or parsers with equal performance. Again, each use case needs to be carefully considered and conceptualised before making use of resource-intensive generative AI.
 

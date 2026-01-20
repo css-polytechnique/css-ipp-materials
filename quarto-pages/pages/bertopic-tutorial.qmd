@@ -18,20 +18,15 @@ format:
             - text: |
                 <script>
                     var _paq = window._paq = window._paq || [];
-                    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-                    _paq.push(["setDocumentTitle", document.domain + "/" + document.title]);
-                    _paq.push(["setCookieDomain", "*.www.css.cnrs.fr"]);
-                    _paq.push(["setDomains", ["*.www.css.cnrs.fr"]]);
                     _paq.push(['trackPageView']);
                     _paq.push(['enableLinkTracking']);
                     (function() {
                         var u="https://analyseweb.huma-num.fr/";
                         _paq.push(['setTrackerUrl', u+'matomo.php']);
-                        _paq.push(['setSiteId', '342']);
-                        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-                        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+                        _paq.push(['setSiteId', '1']);    
                     })();
                 </script>
+                <script src="https://cdn.matomo.cloud/mywebsite.matomo.cloud/matomo.js"></script>
 toc: true
 toc-depth: 3
 ---

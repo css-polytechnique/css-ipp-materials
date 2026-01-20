@@ -3,3 +3,5 @@
 This is a companion page to our main website [CSS\@IPP](https://www.css.cnrs.fr/). You can still find previous tutorials on our [website](https://www.css.cnrs.fr/in-practice/). We have created this GitHub page to host all new tutorials that the team will publish. 
 
 Discover our freshly baked [BERTopic tutorial](./pages/bertopic-tutorial.qmd)!🎉 This tutorial is tailored for social scientists who want to explore a corpus of documents just like with an LDA but with a new method that leverages LLMs. There you'll read about the theory behind this technique and how to set up your own topic analysis.
+
+Yet another tutorial: [How to use LLM for Information Extraction tasks](./pages/information-extraction.qmd)! This tutorial walks you through the IE task and provides guidelines to use this technique in your research. The tutorial is based on the article ["From Codebooks to Promptbooks: Extracting Information from Text with Generative Large Language Models"](https://osf.io/wjvfq_v1) by O. Stuhler, C. Dang Ton and É. Ollion.

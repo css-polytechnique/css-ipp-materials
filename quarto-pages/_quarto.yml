@@ -6,10 +6,14 @@ website:
   page-footer: "![](./assets/general/crest-logo.png){height=100px}" 
   navbar:
     left:
-      - href: index.qmd
-        text: Home
       - text: BERTopic Tutorial
         href: pages/bertopic-tutorial.qmd
+      - text: Information Extraction tutorial
+        href: pages/information-extraction.qmd
+    right:
+      - href: https://www.css.cnrs.fr
+        text: CSS@IPP website
+        target: _blank
 
 format:
   html:

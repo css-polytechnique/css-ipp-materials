@@ -218,7 +218,7 @@ predictions_gender = get_predictions(
 )
 ```
 
-Now to compare and evaluate the performace: 
+Now to compare and evaluate the performance: 
 
 ```python 
 obits_sample.loc[:, "predictions_gender"] = predictions_gender
@@ -397,7 +397,7 @@ obits_sample[["educ_inst", "predictions_educ_instit", "automatic_validation"]]
 
 We could automatically validate that "Brown University" and "Brown" are the same.
 
-Finally, we can save the mismatching rows as an excel file, validate the results by hand and remerge the results: 
+Finally, we can save the mismatching rows as an excel file, validate the results by hand and re-merge the results: 
 
 ```python
 mismatches = obits_sample.loc[~obits_sample["automatic_validation"]]

@@ -15,11 +15,11 @@ table{
 }
 
 .quarto-title-meta-contents{
-    width: 100%;
+    width: 200%;
     display: flex;
     flex-wrap: wrap;    
     p{
-        width: 100px;
+        width: fit-content;
         margin-right: 15px;
     }
 }

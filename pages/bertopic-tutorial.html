@@ -105,20 +105,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 <script>
     var _paq = window._paq = window._paq || [];
-    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-    _paq.push(["setDocumentTitle", document.domain + "/" + document.title]);
-    _paq.push(["setCookieDomain", "*.www.css.cnrs.fr"]);
-    _paq.push(["setDomains", ["*.www.css.cnrs.fr"]]);
     _paq.push(['trackPageView']);
     _paq.push(['enableLinkTracking']);
     (function() {
         var u="https://analyseweb.huma-num.fr/";
         _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', '342']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+        _paq.push(['setSiteId', '1']);
     })();
 </script>
+<script src="https://cdn.matomo.cloud/mywebsite.matomo.cloud/matomo.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -171,12 +166,18 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html"> 
-<span class="menu-text">Home</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link active" href="../pages/bertopic-tutorial.html" aria-current="page"> 
 <span class="menu-text">BERTopic Tutorial</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../pages/information-extraction.html"> 
+<span class="menu-text">Information Extraction tutorial</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.css.cnrs.fr" target="_blank"> 
+<span class="menu-text">CSS@IPP website</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->

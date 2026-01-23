@@ -19,6 +19,8 @@ toc: true
 toc-depth: 3
 ---
 
+![](./assets/general/cc-by.jpg){width=15% fig-align="right"}
+
 In previous tutorials, we covered how generative AI can help social scientists in labelling a large amount of documents. In this tutorial, we focus on another Natural Language Processing (NLP) task: Information Extraction (IE). Based on the work of Oscar Stuhler et al. (2025), we introduce the key concepts and limits so that you can make the most of this tool. 
 
 # The Information Extraction Task

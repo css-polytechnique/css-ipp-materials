@@ -18,6 +18,8 @@ toc-depth: 3
 
 _[The General Inquirer](https://mitpress.mit.edu/9780262690119/the-general-inquirer/), published in 1966, is the first algorithm attempting at recognising recurrent patterns in text data._
 
+![](./assets/general/cc-by.jpg){width=15% fig-align="right"}
+
 # Introduction 
 
 What are the main issues addressed in a set of documents? Are those documents similar or discussing different matters? What is the most important topic? Delineating the main themes in a collection of documents is a common task in social sciences, particularly when exploring a new corpus. Although topics can, in principle, be identified manually, doing so becomes impossible when dealing with large corpora. For this reason, social scientists have long relied on **topic modelling** techniques to quickly extract the main themes present in their corpus (Asmussen & Møller, 2019), whether for exploratory purposes or to assign a label to individual document to conduct further analysis (DiMaggio et al., 2013).

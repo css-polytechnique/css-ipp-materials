@@ -30,7 +30,7 @@ What are the main issues addressed in a set of documents? Are those documents si
 >
 > **Natural language processing (NLP)** is a subfield of computer science that analyses textual data. Main NLP tasks are text generation (like chatGPT), text classification, or topic modelling.
 
-![Topic Modelling in-out sketch](assets/bertopic-tutorial/topic_modelling_scheme.png){height=400px #fig-schema}
+![Topic Modelling in-out sketch](assets/bertopic-tutorial/topic_modelling_scheme.png){#fig-schema  width=80%}
 
 Until recently, topic modelling techniques — and natural language processing (NLP) in general — heavily relied on word counts, especially bag-of-words approaches. Amongst other limits, those approaches did not take into account the context in which a word is used — the order of the words in a sentence does not matter to those models, thus failing to grasp the complexity of the human language.
 
@@ -172,7 +172,7 @@ In reality, this example would not run because there are not enough documents! L
 {#tbl-final-example tbl-colwidths="[10, 20, 20,50]"}
 
 
-![2D plot of the French theses after tuning the topic model — _grey dots are classified as "noise"; these elements can be reassigned a category as we will describe later_.](assets/bertopic-tutorial/2D_final.png){#fig-2d-plot-intro}
+![2D plot of the French theses after tuning the topic model — _grey dots are classified as "noise"; these elements can be reassigned a category as we will describe later_.](assets/bertopic-tutorial/2D_final.png){#fig-2d-plot-intro width=100%}
 
 ## Breaking down the process
 
@@ -270,7 +270,7 @@ To sum it up we have:
 - Then create groups of semantically proximate documents with **HDBSCAN**. Each group can represent latent topics in our corpus.
 - Create meaningful representations of each group by counting words in the documents with **CountVectorizer** and outline the most representative words with **c-TF-IDF**.
 
-![The 6 steps of BERTopic [source](https://maartengr.github.io/BERTopic/algorithm/algorithm.html#visual-overview)](assets/bertopic-tutorial/bertopic-general-en.svg){#fig-general-illustration}
+![The 6 steps of BERTopic [source](https://maartengr.github.io/BERTopic/algorithm/algorithm.html#visual-overview)](assets/bertopic-tutorial/bertopic-general-en.svg){#fig-general-illustration  width=40%}
 
 :::{.callout-note}
 
@@ -531,7 +531,7 @@ The first thing we want to visualise is the space of the embeddings reduced to 2
 )
 ```
 
-![2D plot of the French dissertations for a basic topic model[^18]](assets/bertopic-tutorial/tuto_2d_plot.png){#fig-2d-plot}
+![2D plot of the French dissertations for a basic topic model[^18]](assets/bertopic-tutorial/tuto_2d_plot.png){#fig-2d-plot  width=100%}
 
 On this graph only displaying the 4 top topics, we can see that the cluster are large and dense. We can see that the "1_mechanical_numerical_behavior" and the "3_flow_numerical_fluid" are close, as expected whereas "0_literary_writing_art" and "2_cells_cancer_tumor" are further apart in separate directions.
 
@@ -549,7 +549,7 @@ topic_model.visualize_barchart(
 )
 ```
 
-![Top $n$ words per topic of the French dissertations for a basic topic model](assets/bertopic-tutorial/tuto_top_n_words.png){#fig-top-n-words}
+![Top $n$ words per topic of the French dissertations for a basic topic model](assets/bertopic-tutorial/tuto_top_n_words.png){#fig-top-n-words  width=100%}
 
 Take the topic n°5, we can see keywords like "urban", "land", "city", "local", "public" and "ecological". These keywords make sense together and we can imagine dissertations discussing urban planning at different scales and under different constraints.
 
@@ -561,7 +561,7 @@ A good way to visualise how topics interact with each other is to plot a dendogr
 topic_model.visualize_hierarchy()
 ```
 
-![Hierarchical graph of the French dissertations for a basic topic model](assets/bertopic-tutorial/tuto_hierarchical.png){#fig-hierarchical-plot}
+![Hierarchical graph of the French dissertations for a basic topic model](assets/bertopic-tutorial/tuto_hierarchical.png){#fig-hierarchical-plot  width=100%}
 
 At the very top of this graph, we can see the green branches related to laws and international law, very close to contract law. This is a sign that these three branches merge together and that we dont find legislation-related keywords anywhere else in the three.
 
@@ -712,7 +712,7 @@ We obtain the following results:
 
 : Topic information for a coarse grained topic model {#tbl-topics-tuned tbl-colwidths="[10, 20, 70]"}
 
-![2D map for a coarse grained topic model](assets/bertopic-tutorial/2D_coarse_grain.png){#fig-2D-map-tuned}
+![2D map for a coarse grained topic model](assets/bertopic-tutorial/2D_coarse_grain.png){#fig-2D-map-tuned  width=100%}
 
 ## Additional visualisations: cross-reference with additional tags{#sec-additional-visualisations}
 
@@ -756,7 +756,7 @@ topic_model.visualize_topics_per_class(
 )
 ``` 
 
-![Topics distributed over the OAI tags of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_topics_per_class.png){#fig-topic-per-class}
+![Topics distributed over the OAI tags of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_topics_per_class.png){#fig-topic-per-class  width=100%}
 
 In this figure, we can start by checking that documents are associated to the right topic. For instance, it is coherent to see that documents of the topic '1_cells_cell_expression_role' are found in theses in Health and Medicine as well as in Biology and Biochemistry and that documents of the topic '2_model_numerical_study_method' are found in theses in Physics and Engineering science, . 
 
@@ -768,7 +768,7 @@ topics_over_time = topic_model.topics_over_time(docs = docs, timestamps=year)
 topic_model.visualize_topics_over_time(topics_over_time, topics = [0,1,2,3])
 ```
 
-![Number of theses over the years in each group of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_temporal_axis.png){#fig-temporal-axis}
+![Number of theses over the years in each group of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_temporal_axis.png){#fig-temporal-axis  width=100%}
 
 # Evaluate your topic model{#sec-evaluate-your-topic-model}
 

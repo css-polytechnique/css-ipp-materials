@@ -66,6 +66,21 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script>
+var _paq = window._paq = window._paq || [];
+/* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+_paq.push(["setCookieDomain", "*.css-polytechnique.github.io"]);
+_paq.push(["disableCookies"]);
+_paq.push(['trackPageView']);
+_paq.push(['enableLinkTracking']);
+(function() {
+    var u="https://analyseweb.huma-num.fr/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '615']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+})();
+</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -397,7 +412,7 @@ Figure&nbsp;1: “Figure 1: Overview over the unifying coherence framework&nbsp;
 <p><img src="assets/bertopic-tutorial/coherence_metrics-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
 </figure>
 </div>
-<div id="fig-coherence-metrics-2" class="quarto-float quarto-figure quarto-figure-center anchored" width="100%," data-fig-align="center">
+<div id="fig-coherence-metrics-2" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center" width="100%,">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-coherence-metrics-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <img src="assets/bertopic-tutorial/coherence_metrics-2.png" id="fig-coherence-metrics-2" class="img-fluid quarto-figure quarto-figure-center anchored figure-img">

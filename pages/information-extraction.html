@@ -119,22 +119,6 @@ _paq.push(['enableLinkTracking']);
     g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
 })();
 </script>
-<script>
-    var _paq = window._paq = window._paq || [];
-    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-    _paq.push(["setDocumentTitle", document.domain + "/" + document.title]);
-    _paq.push(["setCookieDomain", "*.www.css.cnrs.fr"]);
-    _paq.push(["setDomains", ["*.www.css.cnrs.fr"]]);
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    (function() {
-        var u="https://analyseweb.huma-num.fr/";
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', '342']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-    })();
-</script>
 
 
 <link rel="stylesheet" href="../styles.css">
@@ -231,6 +215,11 @@ _paq.push(['enableLinkTracking']);
 </header>
 
 
+<div class="quarto-figure quarto-figure-right">
+<figure class="figure">
+<p><img src="./assets/general/cc-by.jpg" class="img-fluid quarto-figure quarto-figure-right figure-img" style="width:15.0%"></p>
+</figure>
+</div>
 <p>In previous tutorials, we covered how generative AI can help social scientists in labelling a large amount of documents. In this tutorial, we focus on another Natural Language Processing (NLP) task: Information Extraction (IE). Based on the work of Oscar Stuhler et al.&nbsp;(2025), we introduce the key concepts and limits so that you can make the most of this tool.</p>
 <section id="the-information-extraction-task" class="level1">
 <h1>The Information Extraction Task</h1>

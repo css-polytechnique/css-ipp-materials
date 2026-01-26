@@ -309,7 +309,7 @@ Then evaluating the performance we get:
 ```python
 obits_sample.loc[:, "predictions_educ_instit"] = predictions_educ_instit
 print("Accuracy of the model: ", (obits_sample["educ_inst"]==obits_sample["predictions_educ_instit"]).mean())
-print((obits_sample[["educ_inst", "predictions_educ_instit"]].to_markdown()))
+obits_sample[["educ_inst", "predictions_educ_instit"]]
 ```
 
 ```txt

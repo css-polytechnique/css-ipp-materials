@@ -44,6 +44,25 @@ Last but certainly not least, environmental impacts need to be seriously conside
 
 In this tutorial, we show how to use the `openai` Python library to analyse obituaries to retrieve the gender of a deceased person and the educational institution they attended.
 
+## Environment setup
+
+For this tutorial we will need to install some regular Python packages with the following command: 
+
+```bash 
+!pip install -q tqdm pandas scikit-learn openapi openai Levenshtein openpyxl
+```
+
+And import them:
+
+```python
+import pandas as pd
+import json
+from openai import OpenAI
+from tqdm import tqdm
+import warnings
+from typing import Any
+```
+
 ## Data
 
 We use a sample of 300 obituaries and metadata mimicking those of the New York Times. For confidentiality reasons, the sample has been altered; the sample is synthetic. The goal is to retrieve the gender of the deceased person as well as the educational institution attended. 
@@ -77,7 +96,7 @@ from openai import OpenAI
 api_url = "https://openrouter.ai/api/v1"
 api_key = "YOUR KEY" # INSERT YOUR KEY HERE
  
-client = OpenAI(
+CLIENT = OpenAI(
   base_url=api_url,
   api_key=api_key,
 )

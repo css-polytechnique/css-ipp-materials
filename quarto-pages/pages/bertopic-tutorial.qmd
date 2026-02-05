@@ -22,13 +22,13 @@ _[The General Inquirer](https://mitpress.mit.edu/9780262690119/the-general-inqui
 
 # Introduction 
 
-What are the main issues addressed in a set of documents? Are those documents similar or discussing different matters? What is the most important topic? Delineating the main themes in a collection of documents is a common task in social sciences, particularly when exploring a new corpus. Although topics can, in principle, be identified manually, doing so becomes impossible when dealing with large corpora. For this reason, social scientists have long relied on **topic modelling** techniques to quickly extract the main themes present in their corpus (Asmussen & Møller, 2019), whether for exploratory purposes or to assign a label to individual document to conduct further analysis (DiMaggio et al., 2013).
+What are the main issues addressed in a set of documents? Are those documents similar or discussing different matters? What is the most important topic? Delineating the main themes in a collection of documents is a common task in social sciences, particularly when exploring a new corpus. Although topics can, in principle, be identified manually, doing so becomes impossible when dealing with large corpora. For this reason, social scientists have long relied on **topic modelling** techniques to quickly extract the main themes present in their corpus (Asmussen & Møller, 2019), whether for exploratory purposes or to assign a label to individual documents to conduct further analysis (DiMaggio et al., 2013).
 
 > **Topic modelling** is a natural language processing task that extracts latent topics structuring a corpus<br/>
 > _For instance, Jockers & Mimno (2013) extracted broad themes in the English literature from the 19th century._ <br/>
 > Several algorithms can perform this -- for many years, [LDA](https://radimrehurek.com/gensim/auto_examples/tutorials/run_lda.html) was the method _de choix_, now challenged by embedding-based approaches like BERTopic.
 >
-> **Natural language processing (NLP)** is a subfield of computer science that analyses textual data. Main NLP tasks are text generation (like chatGPT), text classification, or topic modelling.
+> **Natural language processing (NLP)** is a subfield of computer science that analyses textual data. Main NLP tasks are text generation (like ChatGPT), text classification, or topic modelling.
 
 ![Topic Modelling in-out sketch](assets/bertopic-tutorial/topic_modelling_scheme.png){#fig-schema  width=80%}
 
@@ -38,7 +38,7 @@ To tackle this limit, researchers developed approaches that generate richer and 
 
 Since its inception in 2022, BERTopic has proven its relevance in various studies. For instance, Bizel-Bizellot et al. (2024) used it to analyse survey-free-text answers and identified the main circumstances of infection with COVID-19. In a different field, Törnberg & Törnberg (2025) analysed images and texts to highlight trends regarding misinformation on climate.
 
-BERTopic is a useful tool, but mastering it may feel demanding. In this tutorial, we focus on the general philosophy and how to use BERTopic for a social science project. We will demonstrate how to start with a text corpus and create a topic model that makes sense. We will create a topic model of the PhD theses defended between 2010 and 2022 in France to describe what keeps French PhD students busy.
+BERTopic is a useful tool, but mastering it may feel demanding. In this tutorial, we focus on the general philosophy and how to use BERTopic for a social science project. We will demonstrate how to start with a text corpus and create a topic model that makes sense. We will create a topic model of the PhD theses defended between 2010 and 2022[^30] in France to describe what keeps French PhD students busy.
 
 By the end of this tutorial, you should be able to:
 
@@ -57,7 +57,7 @@ Nevertheless, you will need to have some notions of Python. If you need to refre
 - you have a working environment and can install packages
 - you know the basic syntax of Python (functions, variables, if-statements, for loops) and you're comfortable enough with Pandas to load your documents and proceed to simple manipulations such as creating, dropping and renaming columns and rows.
 
-In this tutorial, we use Python 3.12, and you can install the packages we will need with :
+In this tutorial, we use Python 3.12, and you can install the packages we will need with:
 
 ```bash
 pip install -U bertopic pandas scikit-learn datasets plotly kaleido stopwordsiso nbformat ipykernel
@@ -98,7 +98,7 @@ The tutorial comes with some material uploaded on [Zenodo](https://doi.org/10.5
 
 The BERTopic pipeline takes a list of text documents and returns meaningful topics as well as a mapping from the text documents to the said topics. The goal is to be able to gather documents that are semantically close into clusters, and then describe these topics for further interpretation. Once you have a set of topics, you can come back to the corpus to describe its composition. 
 
-Here is a basic usage of BERTopic which uses the main methods :
+Here is a basic usage of BERTopic which uses the main methods:
 
 ```python
 from bertopic import BERTopic
@@ -140,7 +140,7 @@ We can then retrieve topic information that will return keywords that best repre
 topic_info = topic_model.get_topic_info()
 ```
 
-The `topic_info` variable is a table like this :
+The `topic_info` variable is a table like this:
 
 | Topic | Count | Name       | Representation | Representative_Docs                            |
 | ----- | ----- | ---------- | -------------- | ---------------------------------------------- |
@@ -229,7 +229,7 @@ Different algorithms can be used for clustering. **HDBSCAN** was chosen for its 
 
 Once we have created groups of documents, we need to create a meaningful representation of these topics. The general idea in BERTopic is to identify keywords that best describe the specificity of each topic.
 
-To achieve that, it needs to come back to all the texts in the cluster and sparse them at the word level[^16]. It uses word-count-based techniques that will count the number of occurrences of each word[^5]. There are different strategies to make this word-count-based representation better. For instance, we can choose to remove stop-words — words that do not carry much semantic information (ex: "the", "I", "is", "but", ... ). Other solutions include lemmatisation of words to consider “cats" and "cat" as one word.
+To achieve that, it needs to come back to all the texts in the cluster and parse them at the word level[^16]. It uses word-count-based techniques that will count the number of occurrences of each word[^5]. There are different strategies to make this word-count-based representation better. For instance, we can choose to remove stop-words — words that do not carry much semantic information (ex: "the", "I", "is", "but", ... ). Other solutions include lemmatisation of words to consider “cats" and "cat" as one word.
 
 The idea is to create a word x document matrix. The most basic strategy is to use the `CountVectorizer` object from `scikit-learn` which will create a word x document matrix.
 
@@ -318,7 +318,7 @@ import pandas as pd
 df_raw = pd.read_csv("./data/theses-soutenues-curated.csv")
 ```
 
-The dataset contains the following columns :
+The dataset contains the following columns:
 
 - `CI`: Custom index, values are `CI-XXXX`, with `XXXX` ranging from 0 to 164,378
 - `year`: the year of the defence, values are integers ranging from 2010 to 2022
@@ -436,7 +436,7 @@ language_short = language[:2] # "en" or "fr"
 # Load the embeddings directly to avoid long computation time
 ds = load_from_disk(f"./data/embeddings/gte-multilingual-base-{language_short}-SBERT")
 docs = np.array(ds[f"resumes.{language_short}"]) # 6500 rows
-embeddings = np.array(ds["embedding"])			 # Shape : 6500 x 768
+embeddings = np.array(ds["embedding"])			 # Shape: 6500 x 768
 
 vectorizer_model = CountVectorizer(stop_words = list(stopwords(language_short)))
 
@@ -447,7 +447,7 @@ topic_model = BERTopic(
 topic_model.fit(documents=docs, embeddings=embeddings)
 ```
 
-Now to extract the topics, we need to call the `transform` method : 
+Now to extract the topics, we need to call the `transform` method: 
 
 ```python
 topics, probabilities = topic_model.transform(documents=docs, embeddings=embeddings)
@@ -478,7 +478,7 @@ topic_info
 
 The "Representation" column provides the keywords for each topic. We can see that the keywords retrieved for the noise cluster are very generic: "study", "thesis", "model", "analysis", "approach" and do not convey any meaningful information other than the fact that all documents are academic documents.
 
-For each topic, the model identifies apparently consistent keywords : 
+For each topic, the model identifies apparently consistent keywords: 
 
 - 'mechanical', 'numerical', 'model', 'finite', 'element': this cluster may be grouping dissertations related to numerical simulation in mechanics using the finite element method.
 - ‘cells’, ‘cancer’, ‘tumor’, ‘immune’, ‘patients’: this cluster may be grouping dissertations related to cancer and cures.
@@ -533,7 +533,7 @@ The first thing we want to visualise is the space of the embeddings reduced to 2
 
 ![2D plot of the French dissertations for a basic topic model[^18]](assets/bertopic-tutorial/tuto_2d_plot.png){#fig-2d-plot  width=100%}
 
-On this graph only displaying the 4 top topics, we can see that the cluster are large and dense. We can see that the "1_mechanical_numerical_behavior" and the "3_flow_numerical_fluid" are close, as expected whereas "0_literary_writing_art" and "2_cells_cancer_tumor" are further apart in separate directions.
+On this graph only displaying the 4 top topics, we can see that the clusters are large and dense. We can see that the "1_mechanical_numerical_behavior" and the "3_flow_numerical_fluid" are close, as expected whereas "0_literary_writing_art" and "2_cells_cancer_tumor" are further apart in separate directions.
 
 ### Visualise top words per topic
 
@@ -563,7 +563,7 @@ topic_model.visualize_hierarchy()
 
 ![Hierarchical graph of the French dissertations for a basic topic model](assets/bertopic-tutorial/tuto_hierarchical.png){#fig-hierarchical-plot  width=100%}
 
-At the very top of this graph, we can see the green branches related to laws and international law, very close to contract law. This is a sign that these three branches merge together and that we dont find legislation-related keywords anywhere else in the three.
+At the very top of this graph, we can see the green branches related to laws and international law, very close to contract law. This is a sign that these three branches merge together and that we don’t find legislation-related keywords anywhere else in the three.
 
 # BERTopic pipeline: advanced practices
 
@@ -602,7 +602,7 @@ topic_info_reduced
 
 : Topic information after aggregating topics {#tbl-topics-reduced tbl-colwidths="[10, 30, 60]"}
 
-Similarly to before, the noise topic contains very generic keywords. As for the rest, we can identify seven[^10] main latent topics :
+Similarly to before, the noise topic contains very generic keywords. As for the rest, we can identify seven[^10] main latent topics:
 
 - Social Sciences
 - Medicine and Health
@@ -616,7 +616,7 @@ The topics are very general and give us key insights about our corpus.
 
 A detailed analysis can be useful to understand the structure of the corpus. For instance, the keywords for the second main topic are too general, but because we analysed our documents in details, we know that this topic is the result of merging "1_mechanical_numerical_behavior" and "3_flow_numerical_fluid", allowing us to name this topic "Engineering Sciences, Experimentation and Simulation".
 
-After reducing outliers, here is the distribution of topics across all out documents : 
+After reducing outliers, here is the distribution of topics across all out documents: 
 
 |                                                      |   Topic |   Count | Proportion   |
 |:-----------------------------------------------------|--------:|--------:|:-------------|
@@ -645,7 +645,7 @@ topic_model.merge_topics(docs, topics_to_merge)
 
 ## Tune parameters{#sec-tune-parameters}
 
-A diversity of parameters can be used to tune the topic model. In this section, we propose to tune the 3 most useful parameters outlined in the litterature: the embedding model, `n_neighbors` (UMAP) and `n_components` (HDBSCAN). A table can be found in the [techy notes](./techy-notes.qmd#umap-and-hdbscan-parameter-despcription) providing descriptions for other parameters.
+A diversity of parameters can be used to tune the topic model. In this section, we propose to tune the 3 most useful parameters outlined in the literature: the embedding model, `n_neighbors` (UMAP) and `n_components` (HDBSCAN). A table can be found in the [techy notes](./techy-notes.qmd#umap-and-hdbscan-parameter-despcription) providing descriptions for other parameters.
 
 **1. Assess the quality of the text representations** (parameter tuned: embedding model)
 
@@ -668,7 +668,7 @@ language = "english" # or "french"
 language_short = language[:2] # "en" or "fr"
 ds = load_from_disk(f"./data/embeddings/gte-multilingual-base-{language_short}-SBERT")
 docs = np.array(ds[f"resumes.{language_short}"]) # 6500 rows
-embeddings = np.array(ds["embedding"])			 # Shape : 6500 x 768
+embeddings = np.array(ds["embedding"])			 # Shape: 6500 x 768
 vectorizer_model = CountVectorizer(stop_words = list(stopwords(language_short)))
 
 # create an HDBSCAN and UMAP models
@@ -756,7 +756,7 @@ topic_model.visualize_topics_per_class(
 )
 ``` 
 
-![Topics distributed over the OAI tags of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_topics_per_class.png){#fig-topic-per-class  width=100%}
+![Topics distributed over the OAI tags[^29] of the French theses for a basic topic model](assets/bertopic-tutorial/tuto_topics_per_class.png){#fig-topic-per-class  width=100%}
 
 In this figure, we can start by checking that documents are associated to the right topic. For instance, it is coherent to see that documents of the topic '1_cells_cell_expression_role' are found in theses in Health and Medicine as well as in Biology and Biochemistry and that documents of the topic '2_model_numerical_study_method' are found in theses in Physics and Engineering science, . 
 
@@ -915,7 +915,7 @@ Now that you have a good understanding of BERTopic, and you started to experimen
 For reproducibility purposes, BERTopic lets you save the BERTopic object you created with the `save`[^25] method. Two parameters of importance:
 
 - `serialization (str)`: must be `"safetensors"`, `"pickle"` or `"pytorch"`. We recommend using `"safetensors"` or the `"pytorch"` format as they are broadly used in machine learning and recommended by the [BERTopic documentation](https://maartengr.github.io/BERTopic/api/bertopic.html#bertopic._bertopic.BERTopic.save).
-- `save_ctfidf (bool)` : wether to save the vectorizer configuration or not. This is the heaviest bit (see table below).
+- `save_ctfidf (bool)`: whether to save the vectorizer configuration or not. This is the heaviest bit (see table below).
 
 ```python
 # ~ 500 KB
@@ -1000,8 +1000,8 @@ We retrieve the embeddings and the documents
 
 ```python
 ds = load_from_disk("path/to/file")
-docs = np.array(ds[f"texts"]) # Number of documents : 6500
-embeddings = np.array(ds["embedding"]) # shape : (6500, 768)
+docs = np.array(ds[f"texts"]) # Number of documents: 6500
+embeddings = np.array(ds["embedding"]) # shape: (6500, 768)
 ```
 
 ## Force deterministic behaviour 
@@ -1024,9 +1024,9 @@ You can also set the random state for Numpy (used by Pandas) with `np.random.see
 
 Despite the good results we have demonstrated in this tutorial, BERTopic faces some limits. In this section we try to summarise them and highlight valuable resources if you want to investigate.
 
-The first limit BERTopic faces is that it assumes that one document fits in only one category. This assumption may flattend the corpus' complexity; this can, in theory, be mitigated by using HDBSCAN probability matrix to assign multiple topics to one document (Grootendorst, 2022 §7.2)[^27]. On top of that, results can be very dependant of the task and parameters requiring extra tuning and validation time. It is often advised to try different topic model techniques to cross reference your results.
+The first limit BERTopic faces is that it assumes that one document fits in only one category. This assumption may flatten the corpus' complexity; this can, in theory, be mitigated by using HDBSCAN probability matrix to assign multiple topics to one document (Grootendorst, 2022 §7.2)[^27]. On top of that, results can be very dependant of the task and parameters requiring extra tuning and validation time. It is often advised to try different topic model techniques to cross reference your results.
 <br/>
-When comparing BERTopic with LDA, some experiments report BERTopic underperforming (Hoyle et al., 2025; Li et al., 2025) while others highlight BERTopic's capability to highlight different insightful dimensions of their corpus (Egger & Yu, 2022; Ma et al., 2025). These remarks highlight that NLP techniques and pipelines are heavily task-dependant (Egami et al., 2024; Ollion et al., 2023). These remarks further stress the point made in @sec-evaluate-your-topic-model: the only evaluation that must dictate your choice of method, model and parameters is the qualitative evaluation by experts.
+When comparing BERTopic with LDA, some experiments report BERTopic underperforming (Hoyle et al., 2025; Li et al., 2025) while others emphasise BERTopic's capability to highlight different insightful dimensions of their corpus (Egger & Yu, 2022; Ma et al., 2025). These remarks stress that NLP techniques and pipelines are heavily task-dependant (Egami et al., 2024; Ollion et al., 2023). These remarks further stress the point made in @sec-evaluate-your-topic-model: the only evaluation that must dictate your choice of method, model and parameters is the qualitative evaluation by experts.
 
 Topic models in general also suffer linguistic limitations (Shadrova, 2021)[^28]. From a linguistic perspective, these methods lack conceptualisation and therefore, are difficult to validate and utilise. Other critics center around the interpretability of the results and the overall difficulty to fully validate a topic model.
 
@@ -1034,7 +1034,7 @@ Topic models in general also suffer linguistic limitations (Shadrova, 2021)[^28]
 
 In this tutorial we have explained how to use BERTopic a Python library that facilitates the exploration of a corpus of text. The pipeline leverages several NLP tools such as encoder models and clustering techniques to generate groups of similar texts, as well as bag-of-words techniques to retrieve insightful keywords. We have demonstrated how to create a topic model, tune it and visualise the results. We have also provided ready-to-use techniques to qualitatively evaluate your topic model. 
 
-The most important steps to follow to obtain a coherent topic model are : 
+The most important steps to follow to obtain a coherent topic model are: 
 
 - Define what you want out of your topic model and preprocess your texts accordingly;
 - Carefully choose your embedding model and assess the quality of the embedding space;
@@ -1073,7 +1073,7 @@ Stammbach, D., Zouhar, V., Hoyle, A., Sachan, M., & Ash, E. (2023). Revisiting A
 
 Törnberg, A., & Törnberg, P. (2025). The aesthetics of climate misinformation : Computational multimodal framing analysis with BERTopic and CLIP. Environmental Politics, 1‑24. https://doi.org/10.1080/09644016.2025.2557684
 
-[^1]:The UMAP algorithm is very close to the t-SNE algorithm with better scaling capabilities. Another good option for the dimensionality reduction step is the PCA algorithm that will focus on the global structure. PCA is a better choice if you solely focus on the big picture (McInnes et al., 2018, p45).
+[^1]: The UMAP algorithm is very close to the t-SNE algorithm with better scaling capabilities. Another good option for the dimensionality reduction step is the PCA algorithm that will focus on the global structure. PCA is a better choice if you solely focus on the big picture (McInnes et al., 2018, p45).
 
 [^5]: To be accurate, we count for n-grams: n-grams are sequences of textual entities (tokens or words). In the context of topic modelling, 1-grams would be words, 2-grams would be sequences of 2 words and so on.
 
@@ -1106,3 +1106,7 @@ Törnberg, A., & Törnberg, P. (2025). The aesthetics of climate misinformation�
 [^27]: We have not found resources to do so.
 
 [^28]: The cited paper addresses topic models' limitations in general but use BoW techniques as a starting point for their analysis (namely LSI, LSA, NMF and LDA).
+
+[^29]: OAI tags ("Physique", "Sciences sociales, sociologie, anthropologie") are in french because they are the official tags listed by the [ABES (Agence bibliographique de l'enseignement supérieur)](https://www.data.gouv.fr/organizations/agence-bibliographique-de-lenseignement-superieur).
+
+[^30]: We chose to limit the study to 2010 and later because we found that before that date, the OAI tags were not stabilised. We thought it would be more relevant to reduce the coverage so that the comparison with the OAI tags preserves meaningfulness.
